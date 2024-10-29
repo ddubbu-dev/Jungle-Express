@@ -1,10 +1,13 @@
 import express, { Express, Request, Response } from 'express'
+import { db_test } from './schemas'
 
 const app: Express = express()
 const port = 8000
 
-app.get('/', (req: Request, res: Response) => {
-    res.send('Typescript + Node.js + Express Server')
+app.get('/', async (req: Request, res: Response) => {
+    res.send('Typescript + Node.js + Express Server + MongoDB')
+
+    await db_test().catch((err) => console.log(err))
 })
 
 app.listen(port, () => {
