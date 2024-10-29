@@ -12,6 +12,22 @@ router.get('/list', async (req: Request, res: Response) => {
     res.json({ data: result })
 })
 
+router.get('/:post_id', async (req: Request, res: Response): Promise<any> => {
+    const { post_id } = req.params
+
+    const post = await Posts.findById(post_id)
+
+    if (!post)
+        return res.status(404).json({ message: '게시글을 찾을 수 없어요' })
+
+    return res.status(200).json({
+        title: post.title,
+        content: post.content,
+        user_name: post.user_name,
+        created_at: post.created_at,
+    })
+})
+
 router.post(
     '/',
     async (req: Request<object, object, PostCreateBody>, res: Response) => {
