@@ -2,7 +2,7 @@
     "name": "jungle-express",
     "version": "1.0.0",
     "description": "",
-    "main": "app.js",
+    "main": "app.ts",
     "scripts": {
         "dev": "npx ts-node app.ts"
     },
@@ -10,6 +10,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "dotenv": "^16.4.5",
         "express": "^4.21.1",
         "mongoose": "^8.7.3"
     },
