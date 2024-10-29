@@ -1,8 +1,12 @@
 import express, { Express, Request, Response } from 'express'
 import { connect_db } from './schemas'
+import routes from './routes'
 
 const app: Express = express()
 const port = 8000
+
+app.use(express.json())
+app.use('/post', routes.post)
 
 app.get('/', async (req: Request, res: Response) => {
     res.send('Typescript + Node.js + Express Server + MongoDB')
