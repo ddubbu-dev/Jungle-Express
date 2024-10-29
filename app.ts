@@ -1,4 +1,6 @@
 import cors from 'cors'
+import swaggerUi from 'swagger-ui-express'
+import swaggerJson from './swagger/output.json'
 import express, { Express, Request, Response } from 'express'
 import { connect_db } from './schemas'
 import routes from './routes'
@@ -8,7 +10,8 @@ const port = 8000
 
 app.use(cors())
 app.use(express.json())
-app.use('/post', routes.post)
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerJson))
+app.use('/posts', routes.post)
 
 app.get('/', async (req: Request, res: Response) => {
     res.send('Typescript + Node.js + Express Server + MongoDB')
