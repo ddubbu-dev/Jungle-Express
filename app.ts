@@ -1,3 +1,4 @@
+import cors from 'cors'
 import express, { Express, Request, Response } from 'express'
 import { connect_db } from './schemas'
 import routes from './routes'
@@ -5,6 +6,7 @@ import routes from './routes'
 const app: Express = express()
 const port = 8000
 
+app.use(cors())
 app.use(express.json())
 app.use('/post', routes.post)
 
