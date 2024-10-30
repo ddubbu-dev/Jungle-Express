@@ -2,23 +2,24 @@ import { Router, Request, Response } from 'express'
 import { repository } from '../db'
 import { PostCreateBody, PostUpdateBody } from './posts.type'
 import { validateAuth } from '../middleware/auth'
+import { createError } from '../utils/error'
 
 const router = Router()
 
-router.get('/list', async (req: Request, res: Response) => {
+router.get('/list', async (_, res: Response) => {
     const result = await repository.post.find({
         select: ['title', 'created_at'],
         relations: ['user'],
         order: { created_at: 'DESC' },
     })
 
-    const formattedResult = result.map((post) => ({
+    const formatted = result.map((post) => ({
         title: post.title,
         nickname: post.user.name,
         created_at: post.created_at,
     }))
 
-    res.json({ data: formattedResult })
+    res.json({ data: formatted })
 })
 
 router.get('/:post_id', async (req: Request, res: Response): Promise<void> => {
@@ -30,7 +31,7 @@ router.get('/:post_id', async (req: Request, res: Response): Promise<void> => {
     })
 
     if (!post) {
-        res.status(404).json({ message: '게시글을 찾을 수 없어요' })
+        res.status(404).json(createError({ msg: '게시글을 찾을 수 없어요' }))
         return
     }
 
@@ -57,7 +58,7 @@ router.post(
         })
 
         if (!existingUser) {
-            res.status(404).json({ message: '미가입 유저에요' })
+            res.status(404).json(createError({ msg: '미가입 유저에요' }))
             return
         }
 
@@ -77,7 +78,7 @@ router.post(
             })
         } catch (error) {
             console.error(error)
-            res.status(500).json({ message: '서버 오류' })
+            res.status(500).json(createError({ msg: '서버 오류' }))
         }
     }
 )
@@ -93,9 +94,11 @@ router.delete(
         })
 
         if (!post) {
-            return res.status(404).json({ message: '게시글을 찾을 수 없어요' })
+            return res
+                .status(404)
+                .json(createError({ msg: '게시글을 찾을 수 없어요' }))
         } else if (!post.user) {
-            return res.status(404).json({ message: '미가입 유저에요' })
+            return res.status(404).json(createError({ msg: '미가입 유저에요' }))
         }
 
         const userId = req.user_id
@@ -103,7 +106,7 @@ router.delete(
         if (post.user.id !== userId) {
             return res
                 .status(403)
-                .json({ message: '게시글 삭제 권한이 없습니다' })
+                .json(createError({ msg: '게시글 삭제 권한이 없습니다' }))
         }
 
         await repository.post.delete(post.id)
@@ -127,15 +130,17 @@ router.put(
         })
 
         if (!post) {
-            return res.status(404).json({ message: '게시글을 찾을 수 없어요' })
+            return res
+                .status(404)
+                .json(createError({ msg: '게시글을 찾을 수 없어요' }))
         } else if (!post.user) {
-            return res.status(404).json({ message: '미가입 유저에요' })
+            return res.status(404).json(createError({ msg: '미가입 유저에요' }))
         }
 
         if (post.user.id !== user_id) {
             return res
                 .status(403)
-                .json({ message: '게시글 수정 권한이 없습니다' })
+                .json(createError({ msg: '게시글 수정 권한이 없습니다' }))
         }
 
         post.title = title
