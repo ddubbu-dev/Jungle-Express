@@ -1,6 +1,6 @@
 {
     "name": "express-project",
-    "script": "./build/app.js",
+    "script": "./build/src/app.js",
     "cwd": ".",
     "watch": true,
     "ignore_watch": ["node_modules", "logs"],

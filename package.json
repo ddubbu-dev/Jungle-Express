@@ -2,7 +2,7 @@
     "name": "jungle-express",
     "version": "1.0.0",
     "description": "",
-    "main": "app.ts",
+    "main": "src/app.ts",
     "scripts": {
         "dev": "nodemon",
         "generate-swagger": "npx ts-node swagger/index.ts",
