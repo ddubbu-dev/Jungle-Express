@@ -2,20 +2,27 @@ import { Router, Request, Response } from 'express'
 import { repository } from '../db'
 import { PostCreateBody, PostDeleteBody, PostUpdateBody } from './posts.type'
 import { comparePasswords } from '../utils/encrypt'
+import { validateAuth } from '../middleware/auth'
 
 const router = Router()
 
 router.get('/list', async (req: Request, res: Response) => {
     const result = await repository.post.find({
-        select: ['title', 'user', 'created_at'],
+        select: ['title', 'created_at'],
         relations: ['user'],
         order: { created_at: 'DESC' },
     })
 
-    res.json({ data: result })
+    const formattedResult = result.map((post) => ({
+        title: post.title,
+        nickname: post.user.name,
+        created_at: post.created_at,
+    }))
+
+    res.json({ data: formattedResult })
 })
 
-router.get('/:post_id', async (req: Request, res: Response): Promise<any> => {
+router.get('/:post_id', async (req: Request, res: Response): Promise<void> => {
     const { post_id } = req.params
 
     const post = await repository.post.findOne({
@@ -24,28 +31,30 @@ router.get('/:post_id', async (req: Request, res: Response): Promise<any> => {
     })
 
     if (!post) {
-        return res.status(404).json({ message: '게시글을 찾을 수 없어요' })
+        res.status(404).json({ message: '게시글을 찾을 수 없어요' })
+        return
     }
 
-    return res.status(200).json({
+    res.status(200).json({
         title: post.title,
         content: post.content,
-        user_name: post?.user?.name ?? '탈퇴 유저',
+        nickname: post.user?.name ?? '탈퇴 유저',
         created_at: post.created_at,
     })
 })
 
 router.post(
     '/',
+    validateAuth,
     async (
         req: Request<object, object, PostCreateBody>,
         res: Response
     ): Promise<void> => {
-        const { title, content, user_name } = req.body
+        const { title, content } = req.body
+        const user_id = req.user_id
 
-        // TODO: 로그인 유저 token으로 발급되도록
         const existingUser = await repository.user.findOne({
-            where: { name: user_name },
+            where: { id: user_id },
         })
 
         if (!existingUser) {
@@ -59,8 +68,18 @@ router.post(
             user: existingUser,
         })
 
-        await repository.post.save(newPost)
-        res.status(201).json({ id: newPost.id })
+        try {
+            await repository.post.save(newPost)
+            res.status(201).json({
+                id: newPost.id,
+                title,
+                content,
+                user_name: existingUser.name,
+            })
+        } catch (error) {
+            console.error(error)
+            res.status(500).json({ message: '서버 오류' })
+        }
     }
 )
 
