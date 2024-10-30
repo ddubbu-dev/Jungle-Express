@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express'
 import { repository } from '../db'
 import { PostCreateBody, PostDeleteBody, PostUpdateBody } from './posts.type'
-import { comparePasswords, encryptPassword } from '../utils/encrypt'
+import { comparePasswords } from '../utils/encrypt'
 
 const router = Router()
 
@@ -41,22 +41,22 @@ router.post(
         req: Request<object, object, PostCreateBody>,
         res: Response
     ): Promise<void> => {
-        const { title, content, user_name, user_password } = req.body
+        const { title, content, user_name } = req.body
 
         // TODO: 로그인 유저 token으로 발급되도록
         const existingUser = await repository.user.findOne({
             where: { name: user_name },
         })
+
         if (!existingUser) {
             res.status(404).json({ message: '미가입 유저에요' })
             return
         }
 
-        const encrypted_pw = await encryptPassword(user_password)
         const newPost = repository.post.create({
             title,
             content,
-            user: { name: user_name, hashed_pw: encrypted_pw },
+            user: existingUser,
         })
 
         await repository.post.save(newPost)
@@ -79,6 +79,9 @@ router.delete(
 
         if (!post) {
             return res.status(404).json({ message: '게시글을 찾을 수 없어요' })
+        } else if (!post.user) {
+            res.status(404).json({ message: '미가입 유저에요' })
+            return
         }
 
         const valid = await comparePasswords(user_password, post.user.hashed_pw)
@@ -108,6 +111,9 @@ router.put(
 
         if (!post) {
             return res.status(404).json({ message: '게시글을 찾을 수 없어요' })
+        } else if (!post.user) {
+            res.status(404).json({ message: '미가입 유저에요' })
+            return
         }
 
         const valid = await comparePasswords(user_password, post.user.hashed_pw)
