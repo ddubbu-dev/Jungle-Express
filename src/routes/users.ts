@@ -3,6 +3,7 @@ import { UserSignInBody, UserSignUpBody } from './users.tpye'
 import { validateField } from '../utils/validate'
 import { comparePasswords, encryptPassword } from '../utils/encrypt'
 import { repository } from '../db'
+import { generateAccessToken } from '../utils/jwt'
 
 const router = Router()
 
@@ -30,15 +31,20 @@ router.post(
             return
         }
 
-        // TODO: JWT
+        const accessToken = generateAccessToken({
+            id: user.id,
+            name: user.name,
+        })
+
         res.status(200).json({
             data: {
-                accessToken: 'accessToken',
-                refreshToken: 'refreshToken',
+                accessToken,
+                // TODO: refreshToken
             },
         })
     }
 )
+
 router.post(
     '/sign-up',
     async (
@@ -59,7 +65,6 @@ router.post(
             hashed_pw: encrypted,
         })
 
-        // TODO: class-validator 사용하면 좋을 듯
         const nicknameValid = validateField('nickname', nickname)
         const passwordValid = validateField('password', {
             password: encrypted,

@@ -9,7 +9,8 @@
         "allowSyntheticDefaultImports": true, // 기본 가져오기를 허용
         "moduleResolution": "node", // Node.js 모듈 해석 방식 사용,
         "experimentalDecorators": true,
-        "emitDecoratorMetadata": true
+        "emitDecoratorMetadata": true,
+        "typeRoots": ["src/@types", "./node_modules/@types"]
     },
     "exclude": ["node_modules", "**/*.spec.ts"] // 제외할 파일 및 디렉토리
 }
