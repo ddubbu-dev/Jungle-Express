@@ -1,7 +1,6 @@
 import { Router, Request, Response } from 'express'
 import { repository } from '../db'
-import { PostCreateBody, PostDeleteBody, PostUpdateBody } from './posts.type'
-import { comparePasswords } from '../utils/encrypt'
+import { PostCreateBody, PostUpdateBody } from './posts.type'
 import { validateAuth } from '../middleware/auth'
 
 const router = Router()
@@ -84,44 +83,43 @@ router.post(
 )
 
 router.delete(
-    '/',
-    async (
-        req: Request<object, object, PostDeleteBody>,
-        res: Response
-    ): Promise<any> => {
-        const { user_password, post_id } = req.body
-
+    '/:post_id',
+    validateAuth,
+    async (req: Request, res: Response): Promise<any> => {
+        const { post_id } = req.params
         const post = await repository.post.findOne({
             where: { id: Number(post_id) },
-            relations: ['user'], // user 관계 로딩
+            relations: ['user'],
         })
 
         if (!post) {
             return res.status(404).json({ message: '게시글을 찾을 수 없어요' })
         } else if (!post.user) {
-            res.status(404).json({ message: '미가입 유저에요' })
-            return
+            return res.status(404).json({ message: '미가입 유저에요' })
         }
 
-        const valid = await comparePasswords(user_password, post.user.hashed_pw)
-        if (!valid) {
+        const userId = req.user_id
+
+        if (post.user.id !== userId) {
             return res
-                .status(401)
-                .json({ message: '비밀번호 입력을 확인해주세요' })
+                .status(403)
+                .json({ message: '게시글 삭제 권한이 없습니다' })
         }
 
         await repository.post.delete(post.id)
-        res.json({})
+        res.sendStatus(200)
     }
 )
 
 router.put(
     '/',
+    validateAuth,
     async (
         req: Request<object, object, PostUpdateBody>,
         res: Response
     ): Promise<any> => {
-        const { user_password, post_id, title, content } = req.body
+        const { post_id, title, content } = req.body
+        const user_id = req.user_id
 
         const post = await repository.post.findOne({
             where: { id: Number(post_id) },
@@ -131,22 +129,19 @@ router.put(
         if (!post) {
             return res.status(404).json({ message: '게시글을 찾을 수 없어요' })
         } else if (!post.user) {
-            res.status(404).json({ message: '미가입 유저에요' })
-            return
+            return res.status(404).json({ message: '미가입 유저에요' })
         }
 
-        const valid = await comparePasswords(user_password, post.user.hashed_pw)
-        if (!valid) {
+        if (post.user.id !== user_id) {
             return res
-                .status(401)
-                .json({ message: '비밀번호 입력을 확인해주세요' })
+                .status(403)
+                .json({ message: '게시글 수정 권한이 없습니다' })
         }
 
         post.title = title
         post.content = content
         await repository.post.save(post)
-
-        res.json({})
+        res.sendStatus(200)
     }
 )
 
