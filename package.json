@@ -5,12 +5,13 @@
     "main": "app.ts",
     "scripts": {
         "dev": "nodemon",
-        "generate-swagger": "npx ts-node swagger/index.ts"
+        "generate-swagger": "npx ts-node swagger/index.ts",
+        "build": "rimraf ./build && tsc",
+        "prd": "npm run build && pm2 start build/app.js"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
-    "type": "module",
     "dependencies": {
         "cors": "^2.8.5",
         "dotenv": "^16.4.5",
