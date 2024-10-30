@@ -4,6 +4,7 @@ import { readFileSync } from 'fs'
 import express, { Express, Request, Response } from 'express'
 import { connect_db } from './schemas'
 import routes from './routes'
+import { AppDataSource } from './db'
 
 const app: Express = express()
 const port = 8000
@@ -21,6 +22,14 @@ app.get('/', async (req: Request, res: Response) => {
 })
 
 app.listen(port, async () => {
+    await AppDataSource.initialize()
+        .then(() => {
+            console.log('[1] (mysql) DB Connected')
+        })
+        .catch((err) => {
+            console.error('[Error] (mysql) DB Connected', err)
+        })
+
     await connect_db()
         .then(() => {
             console.log('[1] DB Connected')
