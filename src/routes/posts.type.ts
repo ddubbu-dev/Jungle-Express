@@ -4,7 +4,6 @@ export interface PostCreateBody {
 }
 
 export interface PostUpdateBody {
-    post_id: string
     title: string
     content: string
 }

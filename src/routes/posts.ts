@@ -24,9 +24,14 @@ router.get('/list', async (_, res: Response) => {
 
 router.get('/:post_id', async (req: Request, res: Response): Promise<void> => {
     const { post_id } = req.params
+    const postId = Number(post_id)
+    if (!postId) {
+        res.status(404).json(createError({ msg: '유효하지 않는 post_id 에요' }))
+        return
+    }
 
     const post = await repository.post.findOne({
-        where: { id: Number(post_id) },
+        where: { id: postId },
         relations: ['user'],
     })
 
@@ -88,8 +93,16 @@ router.delete(
     validateAuth,
     async (req: Request, res: Response): Promise<any> => {
         const { post_id } = req.params
+        const postId = Number(post_id)
+        if (!postId) {
+            res.status(404).json(
+                createError({ msg: '유효하지 않는 post_id 에요' })
+            )
+            return
+        }
+
         const post = await repository.post.findOne({
-            where: { id: Number(post_id) },
+            where: { id: postId },
             relations: ['user'],
         })
 
@@ -115,17 +128,26 @@ router.delete(
 )
 
 router.put(
-    '/',
+    '/:post_id',
     validateAuth,
     async (
-        req: Request<object, object, PostUpdateBody>,
+        req: Request<{ post_id: string }, object, PostUpdateBody>,
         res: Response
     ): Promise<any> => {
-        const { post_id, title, content } = req.body
+        const { post_id } = req.params
+        const postId = Number(post_id)
+        if (!postId) {
+            res.status(404).json(
+                createError({ msg: '유효하지 않는 post_id 에요' })
+            )
+            return
+        }
+
+        const { title, content } = req.body
         const user_id = req.user_id
 
         const post = await repository.post.findOne({
-            where: { id: Number(post_id) },
+            where: { id: postId },
             relations: ['user'],
         })
 
