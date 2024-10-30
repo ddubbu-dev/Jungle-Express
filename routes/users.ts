@@ -1,13 +1,38 @@
 import { Router, Request, Response } from 'express'
 import UserModel from '../schemas/user'
-import { UserPostBody } from './users.tpye'
+import { UserSignInBody, UserSignUpBody } from './users.tpye'
 import { validateField } from '../utils/validate'
 
 const router = Router()
 
 router.post(
+    '/sign-in',
+    async (req: Request<object, object, UserSignInBody>, res: Response) => {
+        const { nickname, password } = req.body
+        const user = await UserModel.findOne({
+            name: nickname,
+            hashed_pw: password,
+        })
+
+        if (!user)
+            res.status(400).json({
+                msg: '닉네임 또는 패스워드를 확인해주세요.',
+            })
+        else {
+            // TODO: JWT
+            res.status(200).json({
+                data: {
+                    accessToken: 'accessToken',
+                    refreshToken: 'refreshToken',
+                },
+            })
+        }
+    }
+)
+
+router.post(
     '/sign-up',
-    async (req: Request<object, object, UserPostBody>, res: Response) => {
+    async (req: Request<object, object, UserSignUpBody>, res: Response) => {
         const { nickname, password, password_confirm } = req.body
 
         const newUser = new UserModel({
