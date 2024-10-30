@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express'
 import Posts from '../schemas/post'
 import { PostCreateBody, PostDeleteBody, PostUpdateBody } from './posts.type'
+import { comparePasswords, encryptPassword } from '../utils/encrypt'
 
 const router = Router()
 
@@ -32,12 +33,13 @@ router.post(
     '/',
     async (req: Request<object, object, PostCreateBody>, res: Response) => {
         const { title, content, user_name, user_password } = req.body
+        const encrypted_pw = await encryptPassword(user_password)
 
         await Posts.create({
             title,
             user_name,
             content,
-            user_pw: user_password,
+            user_pw: encrypted_pw,
         }).then((post) => {
             res.status(201).json({ id: post.id })
         })
@@ -57,8 +59,8 @@ router.delete(
         if (!post)
             return res.status(404).json({ message: '게시글을 찾을 수 없어요' })
 
-        // TODO: await bcrypt.compare(user_password, post.user_pw)
-        if (post.user_pw != user_password)
+        const valid = await comparePasswords(user_password, post.user_pw)
+        if (!valid)
             return res
                 .status(401)
                 .json({ message: '비밀번호 입력을 확인해주세요' })
@@ -83,8 +85,8 @@ router.put(
         if (!post)
             return res.status(404).json({ message: '게시글을 찾을 수 없어요' })
 
-        // TODO: await bcrypt.compare(user_password, post.user_pw)
-        if (post.user_pw != user_password)
+        const valid = await comparePasswords(user_password, post.user_pw)
+        if (!valid)
             return res
                 .status(401)
                 .json({ message: '비밀번호 입력을 확인해주세요' })

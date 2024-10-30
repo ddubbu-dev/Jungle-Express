@@ -11,6 +11,7 @@ const port = 8000
 app.use(cors())
 app.use(express.json())
 app.use('/posts', routes.post)
+app.use('/users', routes.user)
 
 const swaggerJson = JSON.parse(readFileSync('./swagger/output.json', 'utf-8'))
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerJson))
