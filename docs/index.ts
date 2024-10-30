@@ -1,4 +1,4 @@
-// TODO: 수정 필요, 현재는 swagger/output.json 수기 작성 중
+// TODO: 수정 필요, 현재는 docs/output.json 수기 작성 중
 import swaggerAutogen from 'swagger-autogen'
 
 const doc = {
