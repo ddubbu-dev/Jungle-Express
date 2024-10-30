@@ -3,6 +3,8 @@ import { UserSignInBody, UserSignUpBody } from './users.tpye'
 import { validateField } from '../utils/validate'
 import { comparePasswords, encryptPassword } from '../utils/encrypt'
 import { repository } from '../db'
+import { generateAccessToken } from '../utils/jwt'
+import { createError } from '../utils/error'
 
 const router = Router()
 
@@ -16,29 +18,34 @@ router.post(
 
         const user = await repository.user.findOneBy({ name: nickname })
         if (!user) {
-            res.status(400).json({
-                msg: '닉네임 또는 패스워드를 확인해주세요.',
-            })
+            res.status(400).json(
+                createError({ msg: '닉네임 또는 패스워드를 확인해주세요.' })
+            )
             return
         }
 
         const valid = await comparePasswords(password, user.hashed_pw)
         if (!valid) {
-            res.status(400).json({
-                msg: '닉네임 또는 패스워드를 확인해주세요.',
-            })
+            res.status(400).json(
+                createError({ msg: '닉네임 또는 패스워드를 확인해주세요.' })
+            )
             return
         }
 
-        // TODO: JWT
+        const accessToken = generateAccessToken({
+            id: user.id,
+            name: user.name,
+        })
+
         res.status(200).json({
             data: {
-                accessToken: 'accessToken',
-                refreshToken: 'refreshToken',
+                accessToken,
+                // TODO: refreshToken
             },
         })
     }
 )
+
 router.post(
     '/sign-up',
     async (
@@ -48,7 +55,7 @@ router.post(
         const { nickname, password, password_confirm } = req.body
 
         if (password !== password_confirm) {
-            res.status(400).json({ msg: '비밀번호/확인 불일치' })
+            res.status(400).json(createError({ msg: '비밀번호/확인 불일치' }))
             return
         }
 
@@ -59,7 +66,6 @@ router.post(
             hashed_pw: encrypted,
         })
 
-        // TODO: class-validator 사용하면 좋을 듯
         const nicknameValid = validateField('nickname', nickname)
         const passwordValid = validateField('password', {
             password: encrypted,
@@ -67,12 +73,12 @@ router.post(
         })
 
         if (!nicknameValid.valid) {
-            res.status(400).json({ msg: nicknameValid.msg })
+            res.status(400).json(createError({ msg: nicknameValid.msg }))
             return
         }
 
         if (!passwordValid.valid) {
-            res.status(400).json({ msg: passwordValid.msg })
+            res.status(400).json(createError({ msg: passwordValid.msg }))
             return
         }
 
@@ -81,7 +87,9 @@ router.post(
                 name: nickname,
             })
             if (existingUser) {
-                res.status(409).json({ msg: '중복된 닉네임입니다' })
+                res.status(409).json(
+                    createError({ msg: '중복된 닉네임입니다' })
+                )
                 return
             }
 
@@ -89,7 +97,7 @@ router.post(
             res.status(201).send({})
         } catch (e) {
             console.error(e)
-            res.status(500).json({ msg: '서버 오류' })
+            res.status(500).json(createError({ msg: '서버 오류' }))
         }
     }
 )
