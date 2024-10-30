@@ -2,7 +2,6 @@ import cors from 'cors'
 import swaggerUi from 'swagger-ui-express'
 import { readFileSync } from 'fs'
 import express, { Express, Request, Response } from 'express'
-import { connect_db } from './schemas'
 import routes from './routes'
 import { AppDataSource } from './db'
 
@@ -28,14 +27,6 @@ app.listen(port, async () => {
         })
         .catch((err) => {
             console.error('[Error] (mysql) DB Connected', err)
-        })
-
-    await connect_db()
-        .then(() => {
-            console.log('[1] DB Connected')
-        })
-        .catch((err) => {
-            console.log('[Error] DB Connected\n', err)
         })
 
     console.log(`[2] Server runs at <https://localhost>:${port}`)
