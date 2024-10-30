@@ -34,7 +34,6 @@ router.post(
     async (req: Request<object, object, PostCreateBody>, res: Response) => {
         const { title, content, user_name, user_password } = req.body
         const encrypted_pw = await encryptPassword(user_password)
-        console.log('[CREATE]', encrypted_pw)
 
         await Posts.create({
             title,
