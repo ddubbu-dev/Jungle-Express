@@ -14,7 +14,7 @@ app.use('/posts', routes.post)
 app.use('/users', routes.user)
 
 const swaggerJson = JSON.parse(readFileSync('./docs/output.json', 'utf-8'))
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerJson))
+app.use('/swagger-docs', swaggerUi.serve, swaggerUi.setup(swaggerJson))
 
 app.get('/', async (req: Request, res: Response) => {
     res.send('Typescript + Node.js + Express Server + MongoDB')
