@@ -4,10 +4,12 @@ import { readFileSync } from 'fs'
 import express, { Express, Request, Response } from 'express'
 import routes from './routes'
 import { AppDataSource } from './db'
+import { logger, logMiddleware } from './middleware/logger'
 
 const app: Express = express()
 const port = 8000
 
+app.use(logMiddleware)
 app.use(cors())
 app.use(express.json())
 app.use('/posts', routes.post)
@@ -20,14 +22,14 @@ app.get('/', async (req: Request, res: Response) => {
     res.send('Typescript + Node.js + Express Server + MongoDB')
 })
 
-app.listen(port, async () => {
-    await AppDataSource.initialize()
-        .then(() => {
-            console.log('[1] (mysql) DB Connected')
-        })
-        .catch((err) => {
-            console.error('[Error] (mysql) DB Connected', err)
-        })
+AppDataSource.initialize()
+    .then(() => {
+        logger.info('DB Connected')
 
-    console.log(`[2] Server runs at <https://localhost>:${port}`)
-})
+        app.listen(port, async () => {
+            logger.info(`Server runs at <https://localhost>:${port}`)
+        })
+    })
+    .catch((err) => {
+        logger.error('DB Connected', err)
+    })
