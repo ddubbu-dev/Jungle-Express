@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express'
 import { repository } from '../db'
 import { PostCreateBody, PostUpdateBody } from './posts.type'
 import { validateAuth } from '../middleware/auth'
+import { logger } from '../middleware/logger'
 import { createError } from '../utils/error'
 
 const router = Router()
@@ -82,7 +83,7 @@ router.post(
                 user_name: existingUser.name,
             })
         } catch (error) {
-            console.error(error)
+            logger.error(`Database Error: ${error.message}`, { error })
             res.status(500).json(createError({ msg: '서버 오류' }))
         }
     }

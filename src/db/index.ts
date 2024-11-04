@@ -24,11 +24,3 @@ export const repository = {
     user: userRepository,
     post: postRepository,
 }
-
-AppDataSource.initialize()
-    .then(() => {
-        console.log('Data Source has been initialized!')
-    })
-    .catch((err) => {
-        console.error('Error during Data Source initialization:', err)
-    })
