@@ -4,8 +4,6 @@
     "cwd": ".",
     "watch": true,
     "ignore_watch": ["node_modules", "logs"],
-    "exec_mode": "cluster",
-    "instances": "4",
     "output": "./logs/console.log",
     "error": "./logs/error.log",
     "env": {
